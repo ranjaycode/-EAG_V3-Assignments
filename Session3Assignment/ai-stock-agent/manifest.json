@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "AI Stock Research Agent",
+  "version": "1.0",
+  "description": "Analyze stock using AI + News + Price Data",
+  "permissions": ["activeTab", "storage", "scripting"],
+  "host_permissions": [
+    "https://newsapi.org/*",
+    "https://www.alphavantage.co/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

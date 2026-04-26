@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Stock Agent</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="chart.js"></script>
+</head>
+<body>
+
+<div class="dashboard">
+  <div class="header" style="position: relative;">
+    <button id="fullscreen-btn" title="Open Full Screen" style="position: absolute; right: 0; top: 0; background: transparent; color: #94a3b8; font-size: 18px; padding: 5px;">⛶</button>
+    <h2>📈 AI Stock Analyst</h2>
+    <p>Powered by Gemini 2.5</p>
+  </div>
+
+  <div class="input-area">
+    <input id="query" placeholder="e.g. Analyze AAPL stock last 30 days"/>
+    <button id="analyze">Analyze</button>
+  </div>
+
+  <div id="logs" class="logs-minimal"></div>
+
+  <div id="chart-container" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <span id="sentiment-badge" style="display: none;"></span>
+        <button id="voice-btn" style="display: none; width: auto; padding: 5px 12px; margin: 0; background: #334155; font-size: 11px; border-radius: 20px;" title="Read Aloud">🔊 Listen</button>
+    </div>
+    <canvas id="stockChart"></canvas>
+  </div>
+
+  <div id="result" class="result-area"></div>
+</div>
+
+<script type="module" src="popup.js"></script>
+</body>
+</html>
