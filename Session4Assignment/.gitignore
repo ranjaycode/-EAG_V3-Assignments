@@ -1,0 +1,5 @@
+node_modules/
+.gemini/
+.env
+investment_research.json
+package-lock.json

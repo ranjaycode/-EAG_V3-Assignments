@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Investment Intelligence Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="background-mesh"></div>
+    <div class="container glass-panel">
+        <header>
+            <div class="logo">
+                <span class="icon">📈</span>
+                <h1>Prefab AI Dashboard</h1>
+            </div>
+            <div class="prompt-container">
+                <textarea id="ai-prompt" placeholder="Enter your command (e.g. 'Analyze Tata Motors stock, get news, save report and show dashboard')"></textarea>
+                <div class="prompt-actions">
+                    <button id="research-btn" class="primary-btn">Execute AI Agent 🚀</button>
+                    <input type="text" id="report-search" placeholder="Filter history...">
+                </div>
+            </div>
+            <div class="status">
+                <div class="dot pulsing"></div>
+                <span>Agent Connected</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="waiting-state" id="waiting-state">
+                <div class="spinner"></div>
+                <p>Waiting for MCP Agent to push data...</p>
+            </div>
+
+            <div class="dashboard-grid hidden" id="dashboard-content">
+                <!-- Top Row: Metrics and Chart -->
+                <div class="card price-card">
+                    <h3>Current Price</h3>
+                    <div class="price-display">
+                        <span class="symbol" id="display-ticker">AAPL</span>
+                        <h2 id="display-price">$0.00</h2>
+                        <div class="trend-badge" id="display-trend">Neu</div>
+                    </div>
+                </div>
+
+                <div class="card chart-card">
+                    <h3>7-Day Price Movement</h3>
+                    <canvas id="priceChart"></canvas>
+                </div>
+
+                <!-- Middle Row: News Timeline -->
+                <div class="card news-card">
+                    <h3>News Timeline 📰</h3>
+                    <div id="news-timeline" class="timeline-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Bottom Row: AI Insights and Saved Reports -->
+                <div class="card analysis-card">
+                    <h3>Agent AI Summary 🤖</h3>
+                    <p id="display-summary">Loading analysis...</p>
+                </div>
+
+                <div class="card terminal-card">
+                    <h3>Agent Thinking Logs 🤖</h3>
+                    <div id="agent-logs" class="terminal-view">
+                        <span class="prompt-cursor">></span> Waiting for prompt...
+                    </div>
+                </div>
+
+                <div class="card history-card">
+                    <h3>Saved Reports History 📂</h3>
+                    <div class="reports-filter">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="uptrend">Bullish</button>
+                        <button class="filter-btn" data-filter="downtrend">Bearish</button>
+                    </div>
+                    <ul id="reports-list" class="styled-list">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

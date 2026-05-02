@@ -1,0 +1,23 @@
+🚀 Starting AI Investment Intelligence Agent...
+🤖 User Prompt: "Analyze Tata Motors (TTM) stock, get latest news, check price movement, save insights, and show dashboard"
+
+AI Investment MCP Server running on stdio
+✅ Connected to MCP Server via stdio
+🧠 [Agent] Resolving stock ticker from prompt...
+🎯 [Agent] Using Verified Mapping: TTM
+🔍 [Agent] Fetching market data for TTM from Internet...
+📊 Data Fetched: {
+  "symbol": "TTM",
+  "currentPrice": 45.20,
+  "recentNews": [
+    "Tata Motors reports strong quarterly growth in EV segment.",
+    "JLR sales boost global revenue for Tata Motors."
+  ]
+}
+🧠 [Agent] Analyzing data with Gemini...
+💡 AI Analysis Complete using gemini-1.5-flash.
+💾 [Agent] Saving report to local file system...
+🖥️ [Agent] Pushing results to Prefab UI Dashboard...
+✨ [UI] Broadcast success: Data pushed to all connected clients.
+
+✨ TASK COMPLETE! Check your dashboard at http://localhost:3005
