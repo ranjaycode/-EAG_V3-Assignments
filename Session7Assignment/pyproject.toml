@@ -1,0 +1,37 @@
+[project]
+name = "eagv3-session6"
+version = "0.1.0"
+description = "EAGV3 Session 6 — Four-layer Cognitive Agent with MCP tools"
+requires-python = ">=3.11"
+dependencies = [
+    # Agent & MCP client
+    "mcp[cli]>=1.9",
+    "pydantic>=2.6",
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+    # MCP server tools
+    "ddgs>=6.3",
+    "crawl4ai>=0.6",
+    "tavily-python>=0.3",
+    # LLM Gateway V3 server (run separately)
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "jsonschema>=4.21",
+    "imageio>=2.37.3",
+    "imageio-ffmpeg>=0.6.0",
+    "numpy>=2.4.5",
+    "faiss-cpu>=1.7.4",
+    "sentence-transformers>=2.2.2",
+    "tokenizers>=0.22.0,<=0.23.0",
+    "tzdata>=2024.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[dependency-groups]
+dev = []
