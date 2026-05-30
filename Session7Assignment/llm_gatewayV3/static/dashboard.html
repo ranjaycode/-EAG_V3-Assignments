@@ -90,6 +90,45 @@
   </div>
   <div id="test-out">—</div>
 
+  <h2>Cognitive RAG Agent Test</h2>
+  <div class="test-area" style="background: rgba(163, 113, 247, 0.05); border: 1px dashed var(--accent); padding: 16px; border-radius: 6px; margin-bottom: 20px; display: block;">
+    <div style="display: flex; gap: 12px; margin-bottom: 10px; align-items: center; flex-wrap: wrap;">
+      <select id="agent-query-id" onchange="onAgentQueryIdChange()" style="padding: 6px 10px; border-radius: 4px; background: var(--panel); border: 1px solid var(--border); color: var(--text);">
+        <option value="">-- custom free-form query --</option>
+        <option value="A">Base A: Claude Shannon Wikipedia</option>
+        <option value="B">Base B: Tokyo activities & weather</option>
+        <option value="C1">Base C1: Mom's birthday (Store)</option>
+        <option value="C2">Base C2: Mom's birthday (Recall)</option>
+        <option value="D">Base D: Asyncio research (3-source)</option>
+        <option value="E">Base E: Index attention.md</option>
+        <option value="F1">Base F1: Index papers/ & verify</option>
+        <option value="F2">Base F2: CoT reasoning query</option>
+        <option value="G">Base G: Credit Assignment</option>
+        <option value="H">Base H: ReAct vs CoT comparison</option>
+        <option value="RAG_A">Custom RAG_A: WebSocket storm</option>
+        <option value="RAG_B">Custom RAG_B: Margin out-of-sync</option>
+        <option value="RAG_C">Custom RAG_C: 2FA Outage Fallback</option>
+        <option value="RAG_D">Custom RAG_D: Client Leverage API</option>
+        <option value="RAG_E">Custom RAG_E: Latency SLAs</option>
+      </select>
+      
+      <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; user-select: none; color: var(--text);">
+        <input type="checkbox" id="agent-enable-rag" checked style="width: auto; margin: 0;">
+        Enable RAG (Retriever Index)
+      </label>
+      
+      <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; user-select: none; color: var(--text);">
+        <input type="checkbox" id="agent-clear-mem" style="width: auto; margin: 0;">
+        Clear Agent Memory
+      </label>
+    </div>
+    <div style="display: flex; gap: 10px; width: 100%; align-items: flex-start;">
+      <textarea id="agent-prompt" placeholder="Enter free-form query or pick a pre-defined query above..." style="flex: 1; min-height: 70px;"></textarea>
+      <button onclick="runAgent()" style="background: var(--accent); border: none; color: white; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Run Agent</button>
+    </div>
+    <div id="agent-out" style="margin-top: 10px; padding: 12px; background: #21262d; border: 1px solid var(--border); border-radius: 4px; white-space: pre-wrap; font: 12px ui-monospace, monospace; min-height: 40px; max-height: 500px; overflow-y: auto; color: #88ff88;">—</div>
+  </div>
+
   <h2>Recent calls
     <span style="float:right; font-size:11px; text-transform:none; letter-spacing:0;">
       <select id="filter-prov" onchange="loadCalls()"><option value="">all providers</option></select>
@@ -289,6 +328,69 @@ async function runTest() {
   } catch (e) {
     out.textContent = '❌ ' + e.message;
   }
+  refresh(); refreshRouters(); loadCalls();
+}
+
+function onAgentQueryIdChange() {
+  const qid = document.getElementById('agent-query-id').value;
+  const promptArea = document.getElementById('agent-prompt');
+  if (qid) {
+    promptArea.disabled = true;
+    promptArea.value = `[Running pre-defined query ${qid}]`;
+  } else {
+    promptArea.disabled = false;
+    promptArea.value = '';
+  }
+}
+
+async function runAgent() {
+  const qid = document.getElementById('agent-query-id').value;
+  const prompt = document.getElementById('agent-prompt').value;
+  const enableRag = document.getElementById('agent-enable-rag').checked;
+  const clearMem = document.getElementById('agent-clear-mem').checked;
+  const out = document.getElementById('agent-out');
+  
+  out.textContent = '⏳ Starting Cognitive Agent subprocess... logs will display here after execution completes.\n';
+  out.style.color = '#e1e4e8';
+  
+  try {
+    const body = {
+      disable_rag: !enableRag,
+      clear_memory: clearMem
+    };
+    if (qid) {
+      body.query_id = qid;
+    } else {
+      if (!prompt.trim()) {
+        out.textContent = '❌ Prompt cannot be empty for custom queries.';
+        out.style.color = 'var(--red)';
+        return;
+      }
+      body.query = prompt;
+    }
+    
+    const r = await fetch('/v1/agent', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    
+    if (!r.ok) {
+      out.textContent = '❌ Error: ' + (d.detail || JSON.stringify(d));
+      out.style.color = 'var(--red)';
+    } else {
+      out.textContent = d.stdout;
+      if (d.stderr) {
+        out.textContent += '\n\n=== STDERR ===\n' + d.stderr;
+      }
+      out.style.color = '#88ff88';
+    }
+  } catch (e) {
+    out.textContent = '❌ Failed to execute: ' + e.message;
+    out.style.color = 'var(--red)';
+  }
+  
   refresh(); refreshRouters(); loadCalls();
 }
 

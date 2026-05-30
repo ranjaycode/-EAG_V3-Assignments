@@ -529,6 +529,56 @@ async def calls(limit: int = 100, provider: Optional[str] = None, status: Option
     return db.recent(limit=limit, provider=provider, status=status)
 
 
+from pydantic import BaseModel
+
+class AgentRequest(BaseModel):
+    query: Optional[str] = None
+    query_id: Optional[str] = None
+    disable_rag: bool = False
+    clear_memory: bool = False
+
+
+@app.post("/v1/agent")
+def run_agent(req: AgentRequest):
+    import shutil
+    import subprocess
+    
+    uv_path = shutil.which("uv") or "uv"
+    cmd = [uv_path, "run", "python", "-u", "agent7.py"]
+    
+    if req.clear_memory:
+        cmd.append("--clear-memory")
+    
+    if req.disable_rag:
+        cmd.append("--disable-rag")
+        
+    if req.query_id:
+        cmd.extend(["--query-id", req.query_id])
+    elif req.query:
+        cmd.append(req.query)
+    else:
+        raise HTTPException(status_code=400, detail="Either query or query_id must be provided")
+        
+    env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
+    
+    res = subprocess.run(
+        cmd,
+        cwd=str(ROOT.parent),
+        capture_output=True,
+        text=True,
+        env=env,
+        encoding="utf-8",
+        errors="replace"
+    )
+    
+    return {
+        "returncode": res.returncode,
+        "stdout": res.stdout,
+        "stderr": res.stderr
+    }
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index():
     return FileResponse(str(ROOT / "static" / "dashboard.html"))
