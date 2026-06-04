@@ -1,0 +1,91 @@
+INFO:     Started server process [49464]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8108 (Press CTRL+C to quit)
+INFO:     127.0.0.1:56904 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58926 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51942 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57398 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65085 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55693 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62528 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49248 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49673 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56133 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58217 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54001 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65091 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52077 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60912 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56725 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52652 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52703 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56484 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59725 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60801 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57402 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61506 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60357 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58263 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60347 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62442 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62843 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63302 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51843 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63534 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61286 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64009 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54972 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49367 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63962 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51956 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53116 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50978 - "POST /v1/chat HTTP/1.1" 502 Bad Gateway
+INFO:     127.0.0.1:54733 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61634 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64581 - "POST /v1/chat HTTP/1.1" 502 Bad Gateway
+INFO:     127.0.0.1:59936 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56412 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64940 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50855 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49955 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50163 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60333 - "POST /v1/chat HTTP/1.1" 502 Bad Gateway
+INFO:     127.0.0.1:56110 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50370 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62129 - "POST /v1/chat HTTP/1.1" 502 Bad Gateway
+INFO:     127.0.0.1:58731 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58064 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51034 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51317 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57527 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62532 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52258 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52259 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53904 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63866 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53048 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52260 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59763 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53049 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52575 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55285 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54541 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64848 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64280 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61504 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50343 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53010 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60058 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55114 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62736 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60572 - "POST /v1/embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50431 - "GET /v1/routers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59557 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61186 - "POST /v1/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60219 - "POST /v1/chat HTTP/1.1" 502 Bad Gateway
+
+
+

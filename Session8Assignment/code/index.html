@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 8 Multi-Agent DAG Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-base: #0b0f19;
+      --bg-surface: rgba(17, 24, 39, 0.7);
+      --bg-card: rgba(30, 41, 59, 0.45);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #8b5cf6;
+      --primary-glow: rgba(139, 92, 246, 0.35);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.2);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.2);
+      --info: #3b82f6;
+      --info-glow: rgba(59, 130, 246, 0.2);
+      --gray: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+    }
+
+    /* Top Navigation */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .brand i {
+      font-size: 1.75rem;
+      background: linear-gradient(135deg, #a78bfa, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .brand span {
+      font-size: 0.75rem;
+      background: rgba(139, 92, 246, 0.2);
+      color: #c084fc;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      font-weight: 500;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--success);
+      box-shadow: 0 0 10px var(--success);
+    }
+
+    /* Main Container layout */
+    .dashboard-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Left Sidebar: Sessions */
+    .sidebar {
+      width: 320px;
+      border-right: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .new-query-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(135deg, var(--primary), #6d28d9);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .new-query-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45);
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.6rem 0.6rem 0.6rem 2.2rem;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: white;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+
+    .session-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem;
+    }
+
+    .session-item {
+      padding: 1rem;
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.2);
+      border: 1px solid transparent;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .session-item:hover {
+      background: rgba(30, 41, 59, 0.45);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .session-item.active {
+      background: rgba(139, 92, 246, 0.08);
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .session-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .session-id {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .session-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .session-query {
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-main);
+    }
+
+    /* Main Area: Visual Graph */
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: rgba(11, 15, 25, 0.5);
+    }
+
+    .query-banner {
+      padding: 1.25rem 2rem;
+      background: rgba(15, 23, 42, 0.3);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .query-banner .badge {
+      background: var(--primary-glow);
+      color: #c084fc;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .query-text-display {
+      font-weight: 500;
+      font-size: 1.05rem;
+      flex: 1;
+      color: var(--text-main);
+    }
+
+    .graph-viewport {
+      flex: 1;
+      position: relative;
+      overflow: auto;
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem;
+    }
+
+    .dag-canvas {
+      position: relative;
+      display: flex;
+      gap: 5.5rem; /* Columns layout */
+      z-index: 5;
+    }
+
+    .svg-connections {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* DAG Columns */
+    .dag-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      justify-content: center;
+      min-width: 190px;
+    }
+
+    .dag-column-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: -0.75rem;
+      font-weight: 600;
+    }
+
+    /* Node Card Styles */
+    .node-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1rem;
+      width: 210px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .node-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .node-card.active-inspect {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary), 0 8px 24px rgba(139, 92, 246, 0.2);
+    }
+
+    /* Node Status modifiers */
+    .node-card.pending {
+      border-left: 4px solid var(--gray);
+    }
+    .node-card.running {
+      border-left: 4px solid var(--info);
+      animation: pulse-border 1.5s infinite alternate;
+    }
+    .node-card.complete {
+      border-left: 4px solid var(--success);
+    }
+    .node-card.failed {
+      border-left: 4px solid var(--danger);
+      background: rgba(239, 68, 68, 0.05);
+    }
+    .node-card.skipped {
+      border-left: 4px solid var(--gray);
+      opacity: 0.5;
+    }
+
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .node-skill {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-transform: capitalize;
+    }
+
+    .node-id-badge {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.35rem;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    .node-preview {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+      min-height: 2rem;
+    }
+
+    .node-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding-top: 0.5rem;
+    }
+
+    .node-duration {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .node-status-badge {
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+    }
+
+    .status-badge-pending { background: rgba(107, 114, 128, 0.2); color: var(--text-muted); }
+    .status-badge-running { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .status-badge-complete { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .status-badge-failed { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .status-badge-skipped { background: rgba(75, 85, 99, 0.2); color: #9ca3af; }
+
+    /* Right Panel: Inspector */
+    .inspector {
+      width: 420px;
+      border-left: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .inspector-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .inspector-header h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .inspector-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .inspector-section {
+      background: rgba(30, 41, 59, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .inspector-section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .meta-label {
+      color: var(--text-muted);
+    }
+
+    .meta-val {
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .code-block-wrapper {
+      position: relative;
+      margin-top: 0.5rem;
+    }
+
+    .code-block {
+      background: #060913;
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      max-height: 250px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stdout-block {
+      background: #02040a;
+      color: #38bdf8;
+      border-left: 3px solid var(--info);
+    }
+
+    .prompt-block {
+      max-height: 150px;
+    }
+
+    /* Modal dialog for running new query */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      width: 500px;
+      max-width: 90vw;
+      padding: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      transform: scale(0.95);
+      transition: all 0.25s ease;
+    }
+
+    .modal-overlay.open .modal {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .modal-body textarea {
+      width: 100%;
+      height: 100px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: white;
+      padding: 0.75rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      resize: none;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-body textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .modal-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 0.85rem;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #7c3aed;
+    }
+
+    /* Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    @keyframes pulse-border {
+      0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.15); }
+      100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.45); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <i class="fa-solid fa-diagram-project"></i>
+      <h1>Orchestrator DAG</h1>
+      <span>EAGV3 S8</span>
+    </div>
+    <div class="status-indicator">
+      <div class="status-dot"></div>
+      <span id="gateway-status">Gateway: Connected</span>
+    </div>
+  </header>
+
+  <div class="dashboard-body">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="new-query-btn" onclick="openNewQueryModal()" style="flex: 1;">
+            <i class="fa-solid fa-play"></i> Run Query
+          </button>
+          <button class="new-query-btn btn-secondary" onclick="clearSessions()" style="background: transparent; border: 1px solid var(--border-color); color: var(--danger); box-shadow: none; padding: 0.5rem; width: 42px; display: flex; justify-content: center; align-items: center;" title="Clear All History">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="session-search" placeholder="Search sessions..." oninput="filterSessions()">
+        </div>
+      </div>
+      <div class="session-list" id="session-list-container">
+        <!-- Session list item injection -->
+      </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="main-workspace">
+      <div class="query-banner" id="query-banner" style="display:none;">
+        <span class="badge">Query</span>
+        <div class="query-text-display" id="query-text-display">Compare populations of Paris, London, and Berlin</div>
+        <div id="polling-indicator" style="display:none; color: var(--info); font-size: 0.85rem; font-weight: 500;">
+          <i class="fa-solid fa-spinner fa-spin"></i> Execution Running...
+        </div>
+      </div>
+
+      <div class="graph-viewport" id="graph-viewport">
+        <!-- Rendered nodes and edges -->
+        <div class="dag-canvas" id="dag-canvas">
+          <svg class="svg-connections" id="svg-connections"></svg>
+          <!-- Dynamic Columns injected here -->
+        </div>
+        <div id="no-session-splash" style="text-align: center; color: var(--text-muted);">
+          <i class="fa-solid fa-circle-nodes" style="font-size: 4rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #a78bfa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+          <h2>No Session Loaded</h2>
+          <p style="font-size: 0.9rem; margin-top: 0.5rem;">Select a session from the list or trigger a new query.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inspector panel -->
+    <div class="inspector" id="inspector" style="display:none;">
+      <div class="inspector-header">
+        <h2 id="inspect-title">Node Inspector</h2>
+        <button class="btn-secondary" onclick="closeInspector()" style="padding: 0.2rem 0.5rem; border-radius: 4px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="inspector-body">
+        <div class="inspector-section">
+          <div class="inspector-section-title">Overview</div>
+          <div class="meta-grid">
+            <span class="meta-label">Node ID</span>
+            <span class="meta-val" id="inspect-node-id">-</span>
+            
+            <span class="meta-label">Skill</span>
+            <span class="meta-val" id="inspect-skill">-</span>
+            
+            <span class="meta-label">Status</span>
+            <span class="meta-val" id="inspect-status">-</span>
+
+            <span class="meta-label">Execution</span>
+            <span class="meta-val" id="inspect-duration">-</span>
+
+            <span class="meta-label">Inputs</span>
+            <span class="meta-val" id="inspect-inputs">-</span>
+          </div>
+        </div>
+
+        <div class="inspector-section" id="inspect-section-meta" style="display:none;">
+          <div class="inspector-section-title">Metadata</div>
+          <div class="meta-grid" id="inspect-metadata-grid"></div>
+        </div>
+
+        <!-- Python Code block for Coder -->
+        <div class="inspector-section" id="inspect-section-code" style="display:none;">
+          <div class="inspector-section-title">Generated Python Code</div>
+          <div class="code-block-wrapper">
+            <pre class="code-block" id="inspect-code-display"></pre>
+          </div>
+        </div>
+
+        <!-- Subprocess stdout for SandboxExecutor -->
+        <div class="inspector-section" id="inspect-section-stdout" style="display:none;">
+          <div class="inspector-section-title">Sandbox Execution Output</div>
+          <div class="code-block-wrapper">
+            <pre class="code-block stdout-block" id="inspect-stdout-display"></pre>
+          </div>
+        </div>
+
+        <!-- Node Result Output -->
+        <div class="inspector-section" id="inspect-section-output" style="display:none;">
+          <div class="inspector-section-title">Node Result Output</div>
+          <div class="code-block-wrapper">
+            <pre class="code-block" id="inspect-output-display"></pre>
+          </div>
+        </div>
+
+        <!-- Rendered Prompt Sent to Gateway -->
+        <div class="inspector-section" id="inspect-section-prompt" style="display:none;">
+          <div class="inspector-section-title">Prompt Sent to Gateway</div>
+          <div class="code-block-wrapper">
+            <pre class="code-block prompt-block" id="inspect-prompt-display"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Query Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title">Trigger Orchestrator Query</div>
+      <div class="modal-body">
+        <textarea id="modal-query-input" placeholder="Type your query here... e.g. Find populations of London and Paris, and calculate their sum using Coder."></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-secondary" onclick="closeNewQueryModal()">Cancel</button>
+        <button class="modal-btn btn-primary" onclick="submitQuery()">Submit Query</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let sessions = [];
+    let currentSessionId = null;
+    let pollInterval = null;
+    let selectedNodeId = null;
+
+    // Load sessions on mount
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchSessions();
+      setInterval(fetchSessions, 5000); // Poll list of sessions
+    });
+
+    async function fetchSessions() {
+      try {
+        const res = await fetch("/api/sessions");
+        const data = await res.json();
+        sessions = data.sessions || [];
+        renderSessionList();
+      } catch (err) {
+        console.error("Failed to fetch sessions", err);
+      }
+    }
+
+    function renderSessionList() {
+      const container = document.getElementById("session-list-container");
+      const filter = document.getElementById("session-search").value.toLowerCase();
+      
+      const filtered = sessions.filter(s => 
+        s.id.toLowerCase().includes(filter) || 
+        (s.query && s.query.toLowerCase().includes(filter))
+      );
+
+      // Sort by last modified timestamp
+      filtered.sort((a,b) => b.modified - a.modified);
+
+      container.innerHTML = filtered.map(s => `
+        <div class="session-item ${s.id === currentSessionId ? 'active' : ''}" onclick="selectSession('${s.id}')">
+          <div class="session-meta">
+            <span class="session-id">${s.id}</span>
+            <span class="session-time">${formatTime(s.modified)}</span>
+          </div>
+          <div class="session-query" title="${s.query || ''}">${s.query || '(no query)'}</div>
+          <div style="margin-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+            <span>Nodes: ${s.node_count}</span>
+            <span style="color: ${s.running ? 'var(--info)' : 'var(--success)'}">${s.running ? '<i class="fa-solid fa-spinner fa-spin"></i> running' : 'complete'}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function filterSessions() {
+      renderSessionList();
+    }
+
+    function formatTime(timestamp) {
+      if (!timestamp) return "";
+      const date = new Date(timestamp * 1000);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    async function selectSession(sid) {
+      currentSessionId = sid;
+      renderSessionList();
+      
+      // Stop any existing polling
+      if (pollInterval) clearInterval(pollInterval);
+      
+      document.getElementById("no-session-splash").style.display = "none";
+      document.getElementById("query-banner").style.display = "flex";
+      
+      await loadSessionDetails(sid);
+      
+      // Check if session is running; if so, poll for updates
+      const s = sessions.find(item => item.id === sid);
+      if (s && s.running) {
+        document.getElementById("polling-indicator").style.display = "block";
+        pollInterval = setInterval(async () => {
+          await loadSessionDetails(sid);
+          // Stop polling if complete
+          const current = sessions.find(item => item.id === sid);
+          if (!current || !current.running) {
+            clearInterval(pollInterval);
+            document.getElementById("polling-indicator").style.display = "none";
+            fetchSessions();
+          }
+        }, 1000);
+      } else {
+        document.getElementById("polling-indicator").style.display = "none";
+      }
+    }
+
+    async function loadSessionDetails(sid) {
+      try {
+        const res = await fetch(`/api/sessions/${sid}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        document.getElementById("query-text-display").innerText = data.query || "(empty query)";
+        
+        renderDAG(data.nodes);
+        
+        // Update selected node inspector if it is open
+        if (selectedNodeId) {
+          const node = data.nodes.find(n => n.node_id === selectedNodeId);
+          if (node) {
+            inspectNode(node);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load session details", err);
+      }
+    }
+
+    // Graph Columns categorization
+    function getSkillColumn(skill) {
+      const s = skill.toLowerCase();
+      if (s === "planner") return 0;
+      if (s === "researcher" || s === "retriever") return 1;
+      if (s === "distiller" || s === "coder" || s === "sentiment_analyzer") return 2;
+      if (s === "critic" || s === "sandbox_executor") return 3;
+      if (s === "formatter") return 4;
+      return 2; // Default column
+    }
+
+    const COLUMNS_LABELS = [
+      "Decomposition",
+      "Perception & Retrieve",
+      "Analysis & Coding",
+      "Evaluation & Execute",
+      "Formatting"
+    ];
+
+    function renderDAG(nodes) {
+      const dagCanvas = document.getElementById("dag-canvas");
+      
+      // Remove all elements except SVG overlay
+      const svg = document.getElementById("svg-connections");
+      dagCanvas.innerHTML = "";
+      dagCanvas.appendChild(svg);
+      svg.innerHTML = "";
+      
+      // Create column arrays
+      const columns = Array.from({length: 5}, () => []);
+      
+      // Distribute nodes to columns
+      nodes.forEach(node => {
+        const colIdx = getSkillColumn(node.skill);
+        columns[colIdx].push(node);
+      });
+      
+      // Render columns
+      columns.forEach((colNodes, idx) => {
+        if (colNodes.length === 0) return;
+        
+        const colDiv = document.createElement("div");
+        colDiv.className = "dag-column";
+        
+        const colTitle = document.createElement("div");
+        colTitle.className = "dag-column-title";
+        colTitle.innerText = COLUMNS_LABELS[idx];
+        colDiv.appendChild(colTitle);
+        
+        // Sort nodes by numeric ID suffix so order remains stable
+        colNodes.sort((a,b) => {
+          const numA = parseInt(a.node_id.split(":")[1]) || 0;
+          const numB = parseInt(b.node_id.split(":")[1]) || 0;
+          return numA - numB;
+        });
+
+        colNodes.forEach(node => {
+          const card = document.createElement("div");
+          card.className = `node-card ${node.status} ${node.node_id === selectedNodeId ? 'active-inspect' : ''}`;
+          card.id = `node-${node.node_id.replace(":", "-")}`;
+          card.onclick = () => {
+            // Unhighlight other cards
+            document.querySelectorAll(".node-card").forEach(c => c.classList.remove("active-inspect"));
+            card.classList.add("active-inspect");
+            selectedNodeId = node.node_id;
+            inspectNode(node);
+          };
+          
+          let durationStr = "—";
+          if (node.result && node.result.elapsed_s) {
+            durationStr = `${node.result.elapsed_s.toFixed(1)}s`;
+          }
+          
+          let preview = "";
+          if (node.result && node.result.error) {
+            preview = `Error: ${node.result.error}`;
+          } else if (node.result && node.result.output) {
+            if (node.skill === "coder" && node.result.output.code) {
+              preview = node.result.output.code;
+            } else if (node.skill === "sandbox_executor" && node.result.output.stdout) {
+              preview = node.result.output.stdout;
+            } else if (node.result.output.final_answer) {
+              preview = node.result.output.final_answer;
+            } else if (node.result.output.fields) {
+              preview = JSON.stringify(node.result.output.fields);
+            } else {
+              preview = JSON.stringify(node.result.output);
+            }
+          } else if (node.metadata && node.metadata.question) {
+            preview = node.metadata.question;
+          }
+          
+          card.innerHTML = `
+            <div class="node-header">
+              <span class="node-skill">${node.skill.replace("_", " ")}</span>
+              <span class="node-id-badge">${node.node_id}</span>
+            </div>
+            <div class="node-preview" title="${escapeHtml(preview)}">${escapeHtml(preview)}</div>
+            <div class="node-footer">
+              <div class="node-duration"><i class="fa-regular fa-clock"></i> ${durationStr}</div>
+              <div class="node-status-badge status-badge-${node.status}">${node.status}</div>
+            </div>
+          `;
+          
+          colDiv.appendChild(card);
+        });
+        
+        dagCanvas.appendChild(colDiv);
+      });
+
+      // Draw connections after DOM elements are placed
+      setTimeout(() => drawEdges(nodes), 50);
+    }
+
+    function drawEdges(nodes) {
+      const svg = document.getElementById("svg-connections");
+      const canvas = document.getElementById("dag-canvas");
+      const canvasRect = canvas.getBoundingClientRect();
+      svg.innerHTML = "";
+      
+      nodes.forEach(node => {
+        if (!node.inputs) return;
+        
+        node.inputs.forEach(inputNid => {
+          if (!inputNid.startsWith("n:")) return;
+          
+          const sourceEl = document.getElementById(`node-${inputNid.replace(":", "-")}`);
+          const targetEl = document.getElementById(`node-${node.node_id.replace(":", "-")}`);
+          
+          if (!sourceEl || !targetEl) return;
+          
+          const srcRect = sourceEl.getBoundingClientRect();
+          const trgRect = targetEl.getBoundingClientRect();
+          
+          // Coordinate relative to canvas container
+          const x1 = srcRect.right - canvasRect.left;
+          const y1 = (srcRect.top + srcRect.bottom)/2 - canvasRect.top;
+          
+          const x2 = trgRect.left - canvasRect.left;
+          const y2 = (trgRect.top + trgRect.bottom)/2 - canvasRect.top;
+          
+          // Control points for smooth bezier curve
+          const cx1 = x1 + (x2 - x1) * 0.4;
+          const cy1 = y1;
+          const cx2 = x1 + (x2 - x1) * 0.6;
+          const cy2 = y2;
+          
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`);
+          path.setAttribute("fill", "none");
+          
+          // Style based on target status
+          if (node.status === "complete") {
+            path.setAttribute("stroke", "rgba(16, 185, 129, 0.4)");
+            path.setAttribute("stroke-width", "2.5");
+          } else if (node.status === "running") {
+            path.setAttribute("stroke", "rgba(59, 130, 246, 0.6)");
+            path.setAttribute("stroke-width", "2.5");
+            path.setAttribute("stroke-dasharray", "5 5");
+            // animate dashoffset
+            const anim = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+            anim.setAttribute("attributeName", "stroke-dashoffset");
+            anim.setAttribute("values", "10;0");
+            anim.setAttribute("dur", "0.5s");
+            anim.setAttribute("repeatCount", "indefinite");
+            path.appendChild(anim);
+          } else if (node.status === "failed") {
+            path.setAttribute("stroke", "rgba(239, 68, 68, 0.4)");
+            path.setAttribute("stroke-width", "2");
+          } else {
+            path.setAttribute("stroke", "rgba(255, 255, 255, 0.08)");
+            path.setAttribute("stroke-width", "1.5");
+          }
+          
+          svg.appendChild(path);
+        });
+      });
+    }
+
+    function inspectNode(node) {
+      document.getElementById("inspector").style.display = "flex";
+      
+      document.getElementById("inspect-node-id").innerText = node.node_id;
+      document.getElementById("inspect-skill").innerText = node.skill.replace("_", " ");
+      document.getElementById("inspect-status").innerText = node.status.toUpperCase();
+      
+      let durationStr = "—";
+      if (node.result && node.result.elapsed_s) {
+        durationStr = `${node.result.elapsed_s.toFixed(2)}s`;
+      }
+      document.getElementById("inspect-duration").innerText = durationStr;
+      document.getElementById("inspect-inputs").innerText = node.inputs ? node.inputs.join(", ") : "(none)";
+
+      // Metadata section
+      const metaGrid = document.getElementById("inspect-metadata-grid");
+      if (node.metadata && Object.keys(node.metadata).length > 0) {
+        document.getElementById("inspect-section-meta").style.display = "block";
+        metaGrid.innerHTML = Object.entries(node.metadata).map(([k, v]) => `
+          <span class="meta-label">${escapeHtml(k)}</span>
+          <span class="meta-val">${escapeHtml(typeof v === 'object' ? JSON.stringify(v) : String(v))}</span>
+        `).join("");
+      } else {
+        document.getElementById("inspect-section-meta").style.display = "none";
+      }
+
+      // Coder Python Code
+      if (node.skill === "coder" && node.result && node.result.output && node.result.output.code) {
+        document.getElementById("inspect-section-code").style.display = "block";
+        document.getElementById("inspect-code-display").innerText = node.result.output.code;
+      } else {
+        document.getElementById("inspect-section-code").style.display = "none";
+      }
+
+      // SandboxExecutor output
+      if (node.skill === "sandbox_executor" && node.result && node.result.output) {
+        document.getElementById("inspect-section-stdout").style.display = "block";
+        const o = node.result.output;
+        let stdoutText = "";
+        if (o.exit_code !== undefined) stdoutText += `[Exit Code ${o.exit_code}]\n`;
+        if (o.stdout) stdoutText += `STDOUT:\n${o.stdout}\n`;
+        if (o.stderr) stdoutText += `STDERR:\n${o.stderr}\n`;
+        document.getElementById("inspect-stdout-display").innerText = stdoutText || "(no stdout/stderr outputs)";
+      } else {
+        document.getElementById("inspect-section-stdout").style.display = "none";
+      }
+
+      // Node Result Output
+      if (node.result && node.result.output) {
+        document.getElementById("inspect-section-output").style.display = "block";
+        document.getElementById("inspect-output-display").innerText = JSON.dumps(node.result.output, null, 2);
+      } else {
+        document.getElementById("inspect-section-output").style.display = "none";
+      }
+
+      // Prompt
+      if (node.prompt_sent) {
+        document.getElementById("inspect-section-prompt").style.display = "block";
+        document.getElementById("inspect-prompt-display").innerText = node.prompt_sent;
+      } else {
+        document.getElementById("inspect-section-prompt").style.display = "none";
+      }
+    }
+
+    function closeInspector() {
+      document.getElementById("inspector").style.display = "none";
+      document.querySelectorAll(".node-card").forEach(c => c.classList.remove("active-inspect"));
+      selectedNodeId = null;
+    }
+
+    // Modal forms
+    function openNewQueryModal() {
+      document.getElementById("modal-overlay").classList.add("open");
+    }
+
+    function closeNewQueryModal() {
+      document.getElementById("modal-overlay").classList.remove("open");
+    }
+
+    async function submitQuery() {
+      const q = document.getElementById("modal-query-input").value.trim();
+      if (!q) return;
+      
+      closeNewQueryModal();
+      
+      try {
+        const res = await fetch("/api/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: q })
+        });
+        const data = await res.json();
+        
+        // Clear query input
+        document.getElementById("modal-query-input").value = "";
+        
+        // Select session and poll
+        await fetchSessions();
+        selectSession(data.session_id);
+      } catch (err) {
+        alert("Failed to submit query: " + err);
+      }
+    }
+
+    async function clearSessions() {
+      if (!confirm("Are you sure you want to clear all execution sessions from history?")) return;
+      try {
+        const res = await fetch("/api/sessions/clear", { method: "POST" });
+        if (res.ok) {
+          currentSessionId = null;
+          selectedNodeId = null;
+          closeInspector();
+          document.getElementById("query-banner").style.display = "none";
+          document.getElementById("no-session-splash").style.display = "block";
+          document.getElementById("dag-canvas").innerHTML = '<svg class="svg-connections" id="svg-connections"></svg>';
+          await fetchSessions();
+        }
+      } catch (err) {
+        alert("Failed to clear sessions: " + err);
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Helper to format/stringify JSON safely
+    JSON.dumps = function(obj, replacer, space) {
+      return JSON.stringify(obj, replacer, space);
+    }
+  </script>
+</body>
+</html>
