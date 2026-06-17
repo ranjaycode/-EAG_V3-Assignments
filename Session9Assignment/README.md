@@ -5,7 +5,7 @@ Multi-agent growing-graph orchestrator built on the Session 8 cognitive architec
 Your assignment for Session 9 is to implement the **Browser Comparison Agent** using Playwright, establish structured comparison reporting, and integrate a real-time **Replay Dashboard** to inspect runs.
 
 ## 📺 YouTube Demo Video
-* **Video Link:** `[YOUR_YOUTUBE_LINK_HERE]` *(Please replace this placeholder with your actual YouTube URL)*
+* **Video Link:** `https://youtu.be/dxSezMGcU0Q` 
 * *The video demonstrates parallel fan-out, critic verdict recovery, custom sentiment analyzer skill, and dynamic browser automation.*
 
 ---
