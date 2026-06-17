@@ -1,14 +1,12 @@
-# EAGV3 Session 8 — Student Scaffolding
+# EAGV3 Session 9 — Browser Comparison Agent & Replay Dashboard
 
-Multi-agent growing-graph orchestrator built on the Session 7 cognitive
-architecture. The graph itself is the agent loop: each node is a typed
-skill (Planner, Researcher, Distiller, Critic, Formatter, …), edges
-carry the predecessor's `AgentResult`, and the runtime executes ready
-nodes in parallel via `asyncio.gather`.
+Multi-agent growing-graph orchestrator built on the Session 8 cognitive architecture. The graph itself is the agent loop: each node is a typed skill (Planner, Researcher, Distiller, Critic, Formatter, Coder, Browser, ...), edges carry the predecessor's `AgentResult`, and the runtime executes ready nodes in parallel via `asyncio.gather`.
 
-Your assignment is to ship one missing skill (the **Coder**) so the
-agent can write code, run it in a subprocess sandbox, and feed the
-result back through the graph. Full spec in [ASSIGNMENT.md](ASSIGNMENT.md).
+Your assignment for Session 9 is to implement the **Browser Comparison Agent** using Playwright, establish structured comparison reporting, and integrate a real-time **Replay Dashboard** to inspect runs.
+
+## 📺 YouTube Demo Video
+* **Video Link:** `[YOUR_YOUTUBE_LINK_HERE]` *(Please replace this placeholder with your actual YouTube URL)*
+* *The video demonstrates parallel fan-out, critic verdict recovery, custom sentiment analyzer skill, and dynamic browser automation.*
 
 ---
 
@@ -132,18 +130,17 @@ your head.
 
 ## Provenance and version
 
-This package is the Session 8 build that passes the round-3 review.
+This package is the Session 9 build extending the Session 8 DAG-based orchestrator.
 22 unit tests cover the failure-recovery + critic-splice mechanics.
-Five validation queries (hello, S7 carryover Shannon, parallel fan-out
-populations, graceful-fail nonexistent path, SIGKILL+resume) have been
-verified end-to-end on the same code you have here.
+All validation queries, custom skills, and Playwright browser comparisons have been
+verified end-to-end on the code you have here.
 
 If your `uv run python flow.py "hello"` produces a final answer, the
 build runs cleanly on your machine. The next step is ASSIGNMENT.md.
 
 ---
 
-## Session 8 Assignment Verification & Validation Logs
+## Session 8 & 9 Assignment Verification & Validation Logs
 
 This section documents the end-to-end execution of the five mandatory verification queries and custom skill workflows implemented to complete the assignment requirements.
 
