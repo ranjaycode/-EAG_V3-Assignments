@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Local Shape Drawing Canvas</title>
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #f3f4f6;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    canvas {
+      border: 2px solid #374151;
+      border-radius: 8px;
+      background-color: #1f2937;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+    .controls {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      background: rgba(31, 41, 55, 0.6);
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+    }
+    label {
+      font-weight: 600;
+    }
+    input[type="color"] {
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: none;
+    }
+    #status {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Local Shape Drawing Canvas</h1>
+  <canvas id="canvas" width="400" height="400"></canvas>
+  <div class="controls">
+    <label for="color-picker">Color Picker:</label>
+    <input type="color" id="color-picker" value="#ff0000">
+    <span id="selection-status">No shape selected</span>
+  </div>
+  <div id="status">Click inside the red circle to select it, then pick a color.</div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('color-picker');
+    const selectionStatus = document.getElementById('selection-status');
+    const statusText = document.getElementById('status');
+
+    // Circle properties
+    const circle = {
+      x: 200,
+      y: 200,
+      radius: 60,
+      color: '#ff0000', // red
+      selected: false
+    };
+
+    function draw() {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw circle
+      ctx.beginPath();
+      ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+      ctx.fillStyle = circle.color;
+      ctx.fill();
+
+      // If selected, draw border/outline
+      if (circle.selected) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = '#4b5563';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    // Check if point is inside circle
+    function isInsideCircle(mx, my) {
+      const dist = Math.sqrt((mx - circle.x)**2 + (my - circle.y)**2);
+      return dist <= circle.radius;
+    }
+
+    // Handle canvas click
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      if (isInsideCircle(mx, my)) {
+        circle.selected = true;
+        selectionStatus.innerText = "Selected: Red Circle";
+        selectionStatus.style.color = "#ef4444";
+        statusText.innerText = "Circle selected! Now select a color using the color picker.";
+        // Set color picker to circle's current color
+        colorPicker.value = circle.color;
+      } else {
+        circle.selected = false;
+        selectionStatus.innerText = "No shape selected";
+        selectionStatus.style.color = "#9ca3af";
+        statusText.innerText = "Clicked outside. Click inside the circle to select it.";
+      }
+      draw();
+    });
+
+    // Handle color picker change
+    colorPicker.addEventListener('input', (e) => {
+      if (circle.selected) {
+        circle.color = e.target.value;
+        statusText.innerText = `Color changed to ${circle.color}!`;
+        if (circle.color.toLowerCase() === '#00ff00' || circle.color.toLowerCase() === '#008000') {
+          selectionStatus.innerText = "Selected: Green Circle";
+          selectionStatus.style.color = "#10b981";
+        }
+        draw();
+      }
+    });
+
+    // Initial draw
+    draw();
+  </script>
+</body>
+</html>
