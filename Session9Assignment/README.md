@@ -2,7 +2,7 @@
 
 Multi-agent growing-graph orchestrator built on the Session 8 cognitive architecture. The graph itself is the agent loop: each node is a typed skill (Planner, Researcher, Distiller, Critic, Formatter, Coder, Browser, ...), edges carry the predecessor's `AgentResult`, and the runtime executes ready nodes in parallel via `asyncio.gather`.
 
-Your assignment for Session 9 is to implement the **Browser Comparison Agent** using Playwright, establish structured comparison reporting, and integrate a real-time **Replay Dashboard** to inspect runs.
+Assignment for Session 9 is to implement the **Browser Comparison Agent** using Playwright, establish structured comparison reporting, and integrate a real-time **Replay Dashboard** to inspect runs.
 
 ## 📺 YouTube Demo Video
 * **Video Link:** `https://youtu.be/dxSezMGcU0Q` 
