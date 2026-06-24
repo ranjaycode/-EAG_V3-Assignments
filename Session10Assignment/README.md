@@ -5,7 +5,7 @@ Multi-agent growing-graph orchestrator built on the Session 9 cognitive architec
 Assignment for Session 10 is to implement the **Computer-Use Skill** that drops into the multi-agent catalog, and demonstrate it solving three desktop automation tasks respecting the five-layer architecture and cascade discipline.
 
 ## 📺 YouTube Demo Video
-* **Video Link:** `https://youtu.be/dxSezMGcU0Q` 
+* **Video Link:** `https://youtu.be/RoNZMaH5J28` 
 * *The video demonstrates parallel fan-out, critic verdict recovery, custom sentiment analyzer skill, browser comparison, and desktop computer-use (Calculator, VS Code, and Canvas).*
 
 ---
