@@ -1,0 +1,28 @@
+# Secrets — NEVER commit
+.env
+.env.local
+
+# Local runtime state — regenerated on each run
+code/state/sessions/*/
+!code/state/sessions/.gitkeep
+code/sandbox/*.txt
+code/.venv/
+gateway/.venv/
+gateway/*.db
+gateway/usage.json
+
+# Build / cache artifacts
+**/__pycache__/
+**/*.pyc
+**/uv.lock
+**/.pytest_cache/
+
+# Editors
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary VS Code directories
+code/vscode-temp-user/
+code/vscode-temp-exts/
+

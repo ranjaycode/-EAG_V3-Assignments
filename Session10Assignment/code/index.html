@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session 10 Orchestrator DAG Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-base: #0b0f19;
+      --bg-surface: rgba(17, 24, 39, 0.7);
+      --bg-card: rgba(30, 41, 59, 0.45);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #8b5cf6;
+      --primary-glow: rgba(139, 92, 246, 0.35);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.2);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.2);
+      --info: #3b82f6;
+      --info-glow: rgba(59, 130, 246, 0.2);
+      --gray: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+    }
+
+    /* Top Navigation */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .brand i {
+      font-size: 1.75rem;
+      background: linear-gradient(135deg, #a78bfa, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .brand span {
+      font-size: 0.75rem;
+      background: rgba(139, 92, 246, 0.2);
+      color: #c084fc;
+      padding: 0.2rem 0.6rem;
+      border-radius: 99px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      font-weight: 500;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--success);
+      box-shadow: 0 0 10px var(--success);
+    }
+
+    /* Main Container layout */
+    .dashboard-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Left Sidebar: Sessions */
+    .sidebar {
+      width: 320px;
+      border-right: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .new-query-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(135deg, var(--primary), #6d28d9);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .new-query-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45);
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.6rem 0.6rem 0.6rem 2.2rem;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: white;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+
+    .session-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem;
+    }
+
+    .session-item {
+      padding: 1rem;
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.2);
+      border: 1px solid transparent;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .session-item:hover {
+      background: rgba(30, 41, 59, 0.45);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .session-item:hover .session-delete-btn {
+      opacity: 1 !important;
+    }
+
+    .session-item.active {
+      background: rgba(139, 92, 246, 0.08);
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .session-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .session-id {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .session-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .session-query {
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-main);
+    }
+
+    /* Main Area: Visual Graph */
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: rgba(11, 15, 25, 0.5);
+    }
+
+    .query-banner {
+      padding: 1.25rem 2rem;
+      background: rgba(15, 23, 42, 0.3);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .query-banner .badge {
+      background: var(--primary-glow);
+      color: #c084fc;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .query-text-display {
+      font-weight: 500;
+      font-size: 1.05rem;
+      flex: 1;
+      color: var(--text-main);
+    }
+
+    .graph-viewport {
+      flex: 1;
+      position: relative;
+      overflow: auto;
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem;
+    }
+
+    .dag-canvas {
+      position: relative;
+      display: flex;
+      gap: 5.5rem; /* Columns layout */
+      z-index: 5;
+    }
+
+    .svg-connections {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* DAG Columns */
+    .dag-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      justify-content: center;
+      min-width: 190px;
+    }
+
+    .dag-column-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: -0.75rem;
+      font-weight: 600;
+    }
+
+    /* Node Card Styles */
+    .node-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1rem;
+      width: 210px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .node-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .node-card.active-inspect {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary), 0 8px 24px rgba(139, 92, 246, 0.2);
+    }
+
+    /* Node Status modifiers */
+    .node-card.pending {
+      border-left: 4px solid var(--gray);
+    }
+    .node-card.running {
+      border-left: 4px solid var(--info);
+      animation: pulse-border 1.5s infinite alternate;
+    }
+    .node-card.complete {
+      border-left: 4px solid var(--success);
+    }
+    .node-card.failed {
+      border-left: 4px solid var(--danger);
+      background: rgba(239, 68, 68, 0.05);
+    }
+    .node-card.skipped {
+      border-left: 4px solid var(--gray);
+      opacity: 0.5;
+    }
+
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .node-skill {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-transform: capitalize;
+    }
+
+    .node-id-badge {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.35rem;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    .node-preview {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+      min-height: 2rem;
+    }
+
+    .node-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding-top: 0.5rem;
+    }
+
+    .node-duration {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .node-status-badge {
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+    }
+
+    .status-badge-pending { background: rgba(107, 114, 128, 0.2); color: var(--text-muted); }
+    .status-badge-running { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .status-badge-complete { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .status-badge-failed { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .status-badge-skipped { background: rgba(75, 85, 99, 0.2); color: #9ca3af; }
+
+    /* Right Panel: Inspector */
+    .inspector {
+      width: 420px;
+      border-left: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .inspector-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .inspector-header h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .inspector-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .inspector-section {
+      background: rgba(30, 41, 59, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .inspector-section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .meta-label {
+      color: var(--text-muted);
+    }
+
+    .meta-val {
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .code-block-wrapper {
+      position: relative;
+      margin-top: 0.5rem;
+    }
+
+    .code-block {
+      background: #060913;
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      max-height: 250px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stdout-block {
+      background: #02040a;
+      color: #38bdf8;
+      border-left: 3px solid var(--info);
+    }
+
+    .prompt-block {
+      max-height: 150px;
+    }
+
+    /* Modal dialog for running new query */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      width: 500px;
+      max-width: 90vw;
+      padding: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      transform: scale(0.95);
+      transition: all 0.25s ease;
+    }
+
+    .modal-overlay.open .modal {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .modal-body textarea {
+      width: 100%;
+      height: 100px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: white;
+      padding: 0.75rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      resize: none;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-body textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .modal-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 0.85rem;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #7c3aed;
+    }
+
+    /* Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    @keyframes pulse-border {
+      0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.15); }
+      100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.45); }
+    }
+
+    /* Workspace Tabs Styling */
+    .workspace-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 1.25rem 0.5rem 1.25rem;
+      background: rgba(15, 23, 42, 0.2);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: white;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      box-shadow: 0 0 10px rgba(139, 92, 246, 0.15);
+    }
+
+    .tab-pane {
+      display: none;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .tab-pane.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Replay Tab Layout */
+    .replay-container {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      gap: 1.25rem;
+    }
+
+    .replay-header-metrics {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .metric-badge {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .metric-badge span.label {
+      color: var(--text-muted);
+    }
+
+    .metric-badge span.value {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .replay-split {
+      display: flex;
+      gap: 1.25rem;
+      height: 480px;
+      min-height: 400px;
+    }
+
+    .replay-timeline-panel {
+      flex: 4;
+      background: rgba(30, 41, 59, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow-y: auto;
+    }
+
+    .replay-timeline-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-step {
+      padding: 0.75rem;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      transition: all 0.2s;
+    }
+
+    .timeline-step:hover {
+      border-color: rgba(139, 92, 246, 0.5);
+      background: rgba(139, 92, 246, 0.05);
+    }
+
+    .timeline-step.active {
+      border-color: var(--primary);
+      background: rgba(139, 92, 246, 0.15);
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.1);
+    }
+
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .step-action {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    .action-navigate { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .action-click { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .action-type { background: rgba(245, 158, 11, 0.2); color: #fba524; }
+    .action-screenshot { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
+    .action-log_path { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+
+    .step-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .step-details {
+      font-size: 0.8rem;
+      color: var(--text-main);
+      word-break: break-all;
+    }
+
+    .step-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .replay-viewer-panel {
+      flex: 6;
+      background: rgba(30, 41, 59, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      position: relative;
+    }
+
+    .screenshot-frame {
+      flex: 1;
+      background: #060913;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .screenshot-frame img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .screenshot-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: rgba(15, 23, 42, 0.8);
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .screenshot-meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .replay-report-panel {
+      background: rgba(30, 41, 59, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .replay-report-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Premium Table Styling */
+    .premium-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+
+    .premium-table th {
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--text-main);
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid rgba(139, 92, 246, 0.25);
+    }
+
+    .premium-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+      vertical-align: top;
+    }
+
+    .premium-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Cost Tab Layout */
+    .cost-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .cost-card {
+      background: rgba(30, 41, 59, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .cost-card-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .cost-card-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff, var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .cost-card-value.success-val {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .cost-card-value.primary-val {
+      background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .cost-card-desc {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <i class="fa-solid fa-diagram-project"></i>
+      <h1>Orchestrator DAG</h1>
+      <span>EAGV3 S9</span>
+    </div>
+    <div class="status-indicator">
+      <div class="status-dot"></div>
+      <span id="gateway-status">Gateway: Connected</span>
+    </div>
+  </header>
+
+  <div class="dashboard-body">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="new-query-btn" onclick="openNewQueryModal()" style="flex: 1;">
+            <i class="fa-solid fa-play"></i> Run Query
+          </button>
+          <button class="new-query-btn btn-secondary" onclick="clearSessions()" style="background: transparent; border: 1px solid var(--border-color); color: var(--danger); box-shadow: none; padding: 0.5rem; width: 42px; display: flex; justify-content: center; align-items: center;" title="Clear All History">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="session-search" placeholder="Search sessions..." oninput="filterSessions()">
+        </div>
+      </div>
+      <div class="session-list" id="session-list-container">
+        <!-- Session list item injection -->
+      </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="main-workspace" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 0;">
+      <div class="query-banner" id="query-banner" style="display:none; flex-shrink: 0; margin: 1rem 1.25rem 0.5rem 1.25rem;">
+        <span class="badge">Query</span>
+        <div class="query-text-display" id="query-text-display">Compare populations of Paris, London, and Berlin</div>
+        <div id="polling-indicator" style="display:none; color: var(--info); font-size: 0.85rem; font-weight: 500; margin-left: auto;">
+          <i class="fa-solid fa-spinner fa-spin"></i> Execution Running...
+        </div>
+      </div>
+
+      <!-- Workspace Tabs -->
+      <div class="workspace-tabs" id="workspace-tabs" style="display:none; flex-shrink: 0; align-items: center; justify-content: space-between;">
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="tab-btn active" id="tab-btn-dag" onclick="switchTab('dag', true)">
+            <i class="fa-solid fa-circle-nodes"></i> DAG Graph View
+          </button>
+          <button class="tab-btn" id="tab-btn-replay" onclick="switchTab('replay', true)">
+            <i class="fa-solid fa-square-poll-horizontal"></i> Browser Replay & Report
+          </button>
+          <button class="tab-btn" id="tab-btn-cost" onclick="switchTab('cost', true)">
+            <i class="fa-solid fa-chart-pie"></i> Cost & Performance
+          </button>
+        </div>
+        <div style="margin-right: 1.25rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 0.4rem; user-select: none;">
+            <input type="checkbox" id="autocycle-toggle" onchange="toggleAutoCycle(this.checked)" style="accent-color: var(--primary); cursor: pointer;" />
+            Auto-Cycle Tabs
+          </label>
+        </div>
+      </div>
+
+      <!-- No Session Loaded Splash -->
+      <div id="no-session-splash" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: var(--text-muted); padding: 2rem;">
+        <i class="fa-solid fa-circle-nodes" style="font-size: 4rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #a78bfa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+        <h2>No Session Loaded</h2>
+        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Select a session from the list or trigger a new query.</p>
+      </div>
+
+      <!-- Tab Panes -->
+      <!-- DAG Pane -->
+      <div id="pane-dag" class="tab-pane active" style="flex: 1; overflow: hidden; position: relative;">
+        <div class="graph-viewport" id="graph-viewport" style="width: 100%; height: 100%; overflow: auto;">
+          <div class="dag-canvas" id="dag-canvas" style="min-height: 100%;">
+            <svg class="svg-connections" id="svg-connections"></svg>
+            <!-- Dynamic Columns injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Replay Pane -->
+      <div id="pane-replay" class="tab-pane" style="flex: 1; overflow: hidden; position: relative;">
+        <div class="replay-container" id="replay-container-el">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Cost Pane -->
+      <div id="pane-cost" class="tab-pane" style="flex: 1; overflow: hidden; position: relative; padding: 1.25rem; overflow-y: auto;">
+        <div class="cost-grid" id="cost-cards-container">
+          <!-- Cards populated by JS -->
+        </div>
+        <div class="replay-report-panel" style="margin-top: 1rem;">
+          <div class="replay-report-title">
+            <i class="fa-solid fa-table-list" style="color: var(--primary);"></i> Agent Usage breakdown
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="premium-table" id="cost-table-el">
+              <thead>
+                <tr>
+                  <th>Agent / Skill</th>
+                  <th>Provider</th>
+                  <th>Calls</th>
+                  <th>Input Tokens</th>
+                  <th>Output Tokens</th>
+                  <th>Retries</th>
+                  <th>Latency</th>
+                  <th>Est. Cost (USD)</th>
+                </tr>
+              </thead>
+              <tbody id="cost-table-body">
+                <!-- Rows populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inspector panel -->
+    <div class="inspector" id="inspector" style="display:none;">
+      <div class="inspector-header">
+        <h2 id="inspect-title">Node Inspector</h2>
+        <button class="btn-secondary" onclick="closeInspector()" style="padding: 0.2rem 0.5rem; border-radius: 4px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="inspector-body">
+        <div class="inspector-section">
+          <div class="inspector-section-title">Overview</div>
+          <div class="meta-grid">
+            <span class="meta-label">Node ID</span>
+            <span class="meta-val" id="inspect-node-id">-</span>
+            
+            <span class="meta-label">Skill</span>
+            <span class="meta-val" id="inspect-skill">-</span>
+            
+            <span class="meta-label">Status</span>
+            <span class="meta-val" id="inspect-status">-</span>
+
+            <span class="meta-label">Execution</span>
+            <span class="meta-val" id="inspect-duration">-</span>
+
+            <span class="meta-label">Inputs</span>
+            <span class="meta-val" id="inspect-inputs">-</span>
+          </div>
+        </div>
+
+        <div class="inspector-section" id="inspect-section-meta" style="display:none;">
+          <div class="inspector-section-title">Metadata</div>
+          <div class="meta-grid" id="inspect-metadata-grid"></div>
+        </div>
+
+        <!-- Python Code block for Coder -->
+        <div class="inspector-section" id="inspect-section-code" style="display:none;">
+          <div class="inspector-section-title">Generated Python Code</div>
+          <div class="code-block-wrapper">
+            <pre class="code-block" id="inspect-code-display"></pre>
+          </div>
+        </div>
+
+        <!-- Subprocess stdout for SandboxExecutor -->
+        <div class="inspector-section" id="inspect-section-stdout" style="display:none;">
+          <div class="inspector-section-title">Sandbox Execution Output</div>
+          <div class="code-block-wrapper">
+            <pre class="code-block stdout-block" id="inspect-stdout-display"></pre>
+          </div>
+        </div>
+
+        <!-- Node Result Output -->
+        <div class="inspector-section" id="inspect-section-output" style="display:none;">
+          <div class="inspector-section-title">Node Result Output</div>
+          <div class="code-block-wrapper">
+            <pre class="code-block" id="inspect-output-display"></pre>
+          </div>
+        </div>
+
+        <!-- Rendered Prompt Sent to Gateway -->
+        <div class="inspector-section" id="inspect-section-prompt" style="display:none;">
+          <div class="inspector-section-title">Prompt Sent to Gateway</div>
+          <div class="code-block-wrapper">
+            <pre class="code-block prompt-block" id="inspect-prompt-display"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Query Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title">Trigger Orchestrator Query</div>
+      <div class="modal-body">
+        <textarea id="modal-query-input" placeholder="Type your query here... e.g. Find populations of London and Paris, and calculate their sum using Coder."></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-secondary" onclick="closeNewQueryModal()">Cancel</button>
+        <button class="modal-btn btn-primary" onclick="submitQuery()">Submit Query</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirm-modal-overlay">
+    <div class="modal" style="max-width: 400px; border: 1px solid rgba(239, 68, 68, 0.3); box-shadow: 0 8px 32px rgba(239, 68, 68, 0.15);">
+      <div class="modal-title" id="confirm-modal-title">Confirm Action</div>
+      <div class="modal-body" id="confirm-modal-body" style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 1.5rem; text-align: center;">
+        Are you sure you want to proceed?
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-secondary" id="confirm-modal-cancel">Cancel</button>
+        <button class="modal-btn btn-primary" id="confirm-modal-ok" style="background: linear-gradient(135deg, var(--danger), #dc2626); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let sessions = [];
+    let currentSessionId = null;
+    let pollInterval = null;
+    let selectedNodeId = null;
+
+    // Load sessions on mount
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchSessions();
+      setInterval(fetchSessions, 2000); // Poll list of sessions
+      startAutoCycling();
+    });
+
+    // Auto-cycling tabs logic
+    let autoCyclingEnabled = false;
+    let autoCycleInterval = null;
+    let autoCycleState = 'dag'; // 'dag', 'replay', 'cost'
+    
+    function startAutoCycling() {
+      if (autoCycleInterval) clearInterval(autoCycleInterval);
+      
+      autoCycleInterval = setInterval(() => {
+        if (!autoCyclingEnabled || !currentSessionId) return;
+        
+        // Find if current session is running
+        const activeSession = sessions.find(s => s.id === currentSessionId);
+        if (!activeSession) return;
+        
+        if (activeSession.running) {
+          // If running, stay on 'dag' to show updates in real-time
+          if (autoCycleState !== 'dag') {
+            autoCycleState = 'dag';
+            switchTab('dag');
+          }
+        } else {
+          // If complete, cycle: dag -> replay -> cost -> repeat
+          if (autoCycleState === 'dag') {
+            autoCycleState = 'replay';
+            switchTab('replay');
+          } else if (autoCycleState === 'replay') {
+            autoCycleState = 'cost';
+            switchTab('cost');
+          } else {
+            autoCycleState = 'dag';
+            switchTab('dag');
+          }
+        }
+      }, 5000); // cycle every 5 seconds
+    }
+
+    async function fetchSessions() {
+      try {
+        const res = await fetch("/api/sessions");
+        const data = await res.json();
+        sessions = data.sessions || [];
+        
+        // Auto-select newest running or newly created session
+        if (sessions.length > 0) {
+          const sorted = [...sessions].sort((a,b) => b.modified - a.modified);
+          const newest = sorted[0];
+          
+          if (newest && newest.id !== currentSessionId) {
+            if (!currentSessionId || newest.running) {
+              selectSession(newest.id);
+            }
+          }
+        }
+        
+        renderSessionList();
+      } catch (err) {
+        console.error("Failed to fetch sessions", err);
+      }
+    }
+
+    function renderSessionList() {
+      const container = document.getElementById("session-list-container");
+      const filter = document.getElementById("session-search").value.toLowerCase();
+      
+      const filtered = sessions.filter(s => 
+        s.id.toLowerCase().includes(filter) || 
+        (s.query && s.query.toLowerCase().includes(filter))
+      );
+
+      // Sort by last modified timestamp
+      filtered.sort((a,b) => b.modified - a.modified);
+
+      container.innerHTML = filtered.map(s => `
+        <div class="session-item ${s.id === currentSessionId ? 'active' : ''}" onclick="selectSession('${s.id}')" style="position: relative;">
+          <div class="session-meta" style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="session-id">${s.id}</span>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <span class="session-time">${formatTime(s.modified)}</span>
+              <button class="session-delete-btn" onclick="deleteSession(event, '${s.id}')" style="background: transparent; border: none; color: var(--danger); cursor: pointer; opacity: 0; transition: opacity 0.2s; padding: 2px; display: flex; align-items: center; justify-content: center;" title="Delete session">
+                <i class="fa-solid fa-trash-can" style="font-size: 0.75rem;"></i>
+              </button>
+            </div>
+          </div>
+          <div class="session-query" title="${s.query || ''}">${s.query || '(no query)'}</div>
+          <div style="margin-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+            <span>Nodes: ${s.node_count}</span>
+            <span style="color: ${s.running ? 'var(--info)' : 'var(--success)'}">${s.running ? '<i class="fa-solid fa-spinner fa-spin"></i> running' : 'complete'}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function filterSessions() {
+      renderSessionList();
+    }
+
+    function formatTime(timestamp) {
+      if (!timestamp) return "";
+      const date = new Date(timestamp * 1000);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    async function selectSession(sid) {
+      // Disable auto-cycling on manual session click
+      autoCyclingEnabled = false;
+      const toggle = document.getElementById("autocycle-toggle");
+      if (toggle) toggle.checked = false;
+
+      currentSessionId = sid;
+      renderSessionList();
+      
+      // Stop any existing polling
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+      
+      document.getElementById("no-session-splash").style.display = "none";
+      document.getElementById("query-banner").style.display = "flex";
+      document.getElementById("workspace-tabs").style.display = "flex";
+      
+      // Reset to DAG tab when switching session
+      switchTab('dag');
+      
+      await loadSessionDetails(sid);
+      
+      // Check if session is running; if so, poll for updates
+      const s = sessions.find(item => item.id === sid);
+      if (s && s.running) {
+        document.getElementById("polling-indicator").style.display = "block";
+        let localInterval = setInterval(async () => {
+          await loadSessionDetails(sid);
+          // Refresh session list to get the latest status
+          await fetchSessions();
+          const current = sessions.find(item => item.id === sid);
+          if (!current || !current.running) {
+            clearInterval(localInterval);
+            if (pollInterval === localInterval) {
+              pollInterval = null;
+            }
+            document.getElementById("polling-indicator").style.display = "none";
+          }
+        }, 1000);
+        pollInterval = localInterval;
+      } else {
+        document.getElementById("polling-indicator").style.display = "none";
+      }
+    }
+
+    async function loadSessionDetails(sid) {
+      try {
+        const res = await fetch(`/api/sessions/${sid}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        document.getElementById("query-text-display").innerText = data.query || "(empty query)";
+        
+        renderDAG(data.nodes);
+        loadBrowserReplay(sid, data.nodes);
+        loadCostData(sid, data);
+        
+        // Update selected node inspector if it is open
+        if (selectedNodeId) {
+          const node = data.nodes.find(n => n.node_id === selectedNodeId);
+          if (node) {
+            inspectNode(node);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load session details", err);
+      }
+    }
+
+    function toggleAutoCycle(enabled) {
+      autoCyclingEnabled = enabled;
+      if (enabled) {
+        const activeBtn = document.querySelector(".tab-btn.active");
+        if (activeBtn) {
+          const tabId = activeBtn.id.replace("tab-btn-", "");
+          autoCycleState = tabId;
+        }
+        startAutoCycling();
+      }
+    }
+
+    function switchTab(tabName, isUserClick = false) {
+      if (isUserClick) {
+        autoCyclingEnabled = false;
+        const toggle = document.getElementById("autocycle-toggle");
+        if (toggle) toggle.checked = false;
+      }
+      document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      
+      document.getElementById(`pane-${tabName}`).classList.add("active");
+      const btn = document.getElementById(`tab-btn-${tabName}`);
+      if (btn) btn.classList.add("active");
+      
+      if (tabName === 'dag') {
+        const svg = document.getElementById("svg-connections");
+        if (svg && svg.dataset.nodes) {
+          try {
+            const nodes = JSON.parse(svg.dataset.nodes);
+            drawEdges(nodes);
+          } catch(e) {}
+        }
+      }
+    }
+
+    let lastReplaySid = null;
+    let selectedReplayStepIndex = 0;
+
+    async function loadBrowserReplay(sid, nodes) {
+      if (lastReplaySid !== sid) {
+        lastReplaySid = sid;
+        selectedReplayStepIndex = 0;
+      }
+      
+      const container = document.getElementById("replay-container-el");
+      const browserNode = nodes.find(n => n.skill === "browser" || n.skill === "computer_use");
+      if (!browserNode) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+            <i class="fa-solid fa-compass-drafting" style="font-size: 3.5rem; margin-bottom: 1rem; color: var(--gray);"></i>
+            <h3>No Browser or Computer Agent scheduled</h3>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">This query was resolved using static research/retrieval. Run a browser/computer query to schedule the Agent.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let pathChosen = "extract";
+      try {
+        const pathRes = await fetch(`/state/sessions/${sid}/browser/path.txt`);
+        if (pathRes.ok) {
+          pathChosen = (await pathRes.text()).trim();
+        }
+      } catch(e) {}
+      
+      let actions = [];
+      try {
+        const actionsRes = await fetch(`/state/sessions/${sid}/browser/actions.json`);
+        if (actionsRes.ok) {
+          actions = await actionsRes.json();
+        }
+      } catch(e) {}
+      
+      let comparisonTable = "";
+      const formatterNode = nodes.find(n => n.skill === "formatter");
+      if (formatterNode && formatterNode.result && formatterNode.result.output && formatterNode.result.output.final_answer) {
+        const answer = formatterNode.result.output.final_answer;
+        if (answer.includes("|")) {
+          const match = answer.match(/\|[\s\S]*\|/);
+          if (match) {
+            comparisonTable = match[0];
+          }
+        }
+      }
+      
+      if (!comparisonTable && browserNode.result && browserNode.result.output && browserNode.result.output.comparison_table) {
+        comparisonTable = browserNode.result.output.comparison_table;
+      }
+      
+      if (actions.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 3.5rem; margin-bottom: 1rem; color: var(--primary);"></i>
+            <h3>Browser Agent Executing...</h3>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">The browser agent is actively interacting with pages. Replay will load shortly.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let timelineHTML = actions.map((act, index) => {
+        let actionBadgeClass = `action-${act.action}`;
+        let timeStr = act.timestamp ? new Date(act.timestamp).toLocaleTimeString() : "";
+        let isActive = index === selectedReplayStepIndex;
+        return `
+          <div class="timeline-step ${isActive ? 'active' : ''}" onclick="selectReplayStep(this, ${index}, '${sid}', '${act.screenshot || ''}', '${escapeHtml(act.url)}', '${escapeHtml(act.title)}', '${escapeHtml(act.details)}')">
+            <div class="step-header">
+              <span class="step-action ${actionBadgeClass}">${act.action}</span>
+              <span class="step-time">${timeStr}</span>
+            </div>
+            <div class="step-details">${escapeHtml(act.details)}</div>
+            <div class="step-meta" title="${escapeHtml(act.url)}">${escapeHtml(act.url)}</div>
+          </div>
+        `;
+      }).join("");
+      
+      let tableHTML = "";
+      if (comparisonTable) {
+        tableHTML = `
+          <div class="replay-report-panel">
+            <div class="replay-report-title">
+              <i class="fa-solid fa-table" style="color: var(--primary);"></i> Comparison Report
+            </div>
+            <div style="overflow-x: auto;">
+              ${renderMarkdownTableToHTML(comparisonTable)}
+            </div>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = `
+        <div class="replay-header-metrics">
+          <div class="metric-badge">
+            <span class="label"><i class="fa-solid fa-route"></i> Browser Path:</span>
+            <span class="value" style="text-transform: uppercase;">${pathChosen}</span>
+          </div>
+          <div class="metric-badge">
+            <span class="label"><i class="fa-solid fa-eye"></i> Action Steps:</span>
+            <span class="value">${actions.length}</span>
+          </div>
+          <div class="metric-badge">
+            <span class="label"><i class="fa-solid fa-image"></i> Screenshots:</span>
+            <span class="value">${actions.filter(a => a.screenshot).length}</span>
+          </div>
+        </div>
+        
+        <div class="replay-split">
+          <div class="replay-timeline-panel">
+            <div class="replay-timeline-title">Action Timeline</div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              ${timelineHTML}
+            </div>
+          </div>
+          <div class="replay-viewer-panel">
+            <div class="replay-timeline-title">Screenshot Live View</div>
+            <div class="screenshot-frame" id="replay-screenshot-frame">
+              <img id="replay-screenshot-img" src="" style="display:none;" />
+              <div id="replay-screenshot-fallback" style="color: var(--text-muted); font-size: 0.85rem;"><i class="fa-solid fa-image" style="font-size: 2rem; margin-bottom: 0.5rem; display:block; text-align:center;"></i>Select a step to view screenshot</div>
+            </div>
+            <div class="screenshot-meta" id="replay-screenshot-meta" style="display:none;">
+              <div class="screenshot-meta-row">
+                <span style="font-weight: 600; color: white;" id="replay-meta-title">Page Title</span>
+                <span id="replay-meta-action" style="font-weight: 700; text-transform: uppercase; color: var(--primary);">CLICK</span>
+              </div>
+              <div id="replay-meta-url" style="word-break: break-all; margin-top: 0.25rem; font-size: 0.7rem; color: var(--text-muted);">http://example.com</div>
+              <div id="replay-meta-desc" style="margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.25rem; color: var(--text-main);">Details about action</div>
+            </div>
+          </div>
+        </div>
+        
+        ${tableHTML}
+      `;
+      
+      const activeStepEl = container.querySelectorAll(".timeline-step")[selectedReplayStepIndex];
+      if (activeStepEl) {
+        const act = actions[selectedReplayStepIndex];
+        selectReplayStep(activeStepEl, selectedReplayStepIndex, sid, act.screenshot || '', act.url, act.title, act.details);
+      } else {
+        const firstScrIdx = actions.findIndex(a => a.screenshot);
+        if (firstScrIdx !== -1) {
+          selectedReplayStepIndex = firstScrIdx;
+          const firstStepEl = container.querySelectorAll(".timeline-step")[firstScrIdx];
+          if (firstStepEl) {
+            const act = actions[firstScrIdx];
+            selectReplayStep(firstStepEl, firstScrIdx, sid, act.screenshot || '', act.url, act.title, act.details);
+          }
+        }
+      }
+    }
+    
+    function selectReplayStep(element, index, sid, screenshotName, url, title, details) {
+      selectedReplayStepIndex = index;
+      document.querySelectorAll(".timeline-step").forEach(el => el.classList.remove("active"));
+      element.classList.add("active");
+      
+      const img = document.getElementById("replay-screenshot-img");
+      const fallback = document.getElementById("replay-screenshot-fallback");
+      const meta = document.getElementById("replay-screenshot-meta");
+      
+      if (screenshotName) {
+        img.src = `/state/sessions/${sid}/browser/${screenshotName}`;
+        img.style.display = "block";
+        fallback.style.display = "none";
+      } else {
+        img.style.display = "none";
+        fallback.style.display = "block";
+      }
+      
+      meta.style.display = "block";
+      document.getElementById("replay-meta-title").innerText = title || "No Title";
+      document.getElementById("replay-meta-url").innerText = url || "";
+      document.getElementById("replay-meta-desc").innerText = details || "";
+      
+      const actionType = element.querySelector(".step-action").innerText;
+      document.getElementById("replay-meta-action").innerText = actionType;
+    }
+
+    function renderMarkdownTableToHTML(markdown) {
+      if (!markdown) return "";
+      const lines = markdown.trim().split("\n");
+      if (lines.length < 2) return markdown;
+      
+      let tableHTML = '<table class="premium-table">';
+      let headersParsed = false;
+      let headerCount = 0;
+      
+      for (let line of lines) {
+        line = line.trim();
+        if (!line.startsWith("|")) continue;
+        
+        if (line.includes("---") || line.includes("-|-")) {
+          continue;
+        }
+        
+        const cells = line.split("|").slice(1, -1).map(c => c.trim());
+        if (!headersParsed) {
+          tableHTML += "<thead><tr>";
+          for (let cell of cells) {
+            tableHTML += `<th>${cell}</th>`;
+          }
+          tableHTML += "</tr></thead><tbody>";
+          headersParsed = true;
+          headerCount = cells.length;
+        } else {
+          tableHTML += "<tr>";
+          for (let i = 0; i < headerCount; i++) {
+            const cell = cells[i] || "";
+            tableHTML += `<td>${cell}</td>`;
+          }
+          tableHTML += "</tr>";
+        }
+      }
+      tableHTML += "</tbody></table>";
+      return tableHTML;
+    }
+
+    function loadCostData(sid, data) {
+      const cardsContainer = document.getElementById("cost-cards-container");
+      const tableBody = document.getElementById("cost-table-body");
+      
+      const nodes = data.nodes || [];
+      const costData = data.cost_data || {};
+      
+      const turnCount = nodes.filter(n => n.status === "complete" || n.status === "failed").length;
+      
+      let totalLatencyMs = 0;
+      let totalCalls = 0;
+      let totalInputTokens = 0;
+      let totalOutputTokens = 0;
+      let totalRetries = 0;
+      let totalUSD = 0;
+      
+      const rowsHTML = [];
+      const agentRollup = {};
+      
+      Object.entries(costData).forEach(([agent, callsList]) => {
+        callsList.forEach(c => {
+          const key = `${agent} (${c.provider})`;
+          if (!agentRollup[key]) {
+            agentRollup[key] = {
+              agent: agent,
+              provider: c.provider,
+              calls: 0,
+              in_tok: 0,
+              out_tok: 0,
+              latency: 0,
+              retries: 0
+            };
+          }
+          agentRollup[key].calls += c.calls || 0;
+          agentRollup[key].in_tok += c.in_tok || 0;
+          agentRollup[key].out_tok += c.out_tok || 0;
+          agentRollup[key].latency += c.total_latency_ms || 0;
+          agentRollup[key].retries += c.total_retries || 0;
+        });
+      });
+      
+      Object.values(agentRollup).forEach(r => {
+        let estCost = 0;
+        const provider = r.provider.toLowerCase();
+        if (provider.includes("gemini")) {
+          estCost = (r.in_tok * 0.075 + r.out_tok * 0.30) / 1_000_000;
+        } else {
+          estCost = (r.in_tok * 0.15 + r.out_tok * 0.60) / 1_000_000;
+        }
+        
+        totalCalls += r.calls;
+        totalInputTokens += r.in_tok;
+        totalOutputTokens += r.out_tok;
+        totalLatencyMs += r.latency;
+        totalRetries += r.retries;
+        totalUSD += estCost;
+        
+        rowsHTML.push(`
+          <tr>
+            <td style="font-weight: 600; text-transform: capitalize;">${r.agent}</td>
+            <td style="text-transform: capitalize;">${r.provider}</td>
+            <td>${r.calls}</td>
+            <td>${r.in_tok.toLocaleString()}</td>
+            <td>${r.out_tok.toLocaleString()}</td>
+            <td>${r.retries || 0}</td>
+            <td>${(r.latency / 1000).toFixed(2)}s</td>
+            <td style="font-family: 'Fira Code', monospace; color: var(--warning);">$${estCost.toFixed(6)}</td>
+          </tr>
+        `);
+      });
+      
+      cardsContainer.innerHTML = `
+        <div class="cost-card">
+          <span class="cost-card-title"><i class="fa-solid fa-coins"></i> Estimated Total Cost</span>
+          <span class="cost-card-value primary-val">$${totalUSD.toFixed(5)}</span>
+          <span class="cost-card-desc">Calculated from LLM inputs/outputs</span>
+        </div>
+        <div class="cost-card">
+          <span class="cost-card-title"><i class="fa-solid fa-arrow-rotate-right"></i> Total Turn Count</span>
+          <span class="cost-card-value">${turnCount} Nodes</span>
+          <span class="cost-card-desc">Total graph steps executed</span>
+        </div>
+        <div class="cost-card">
+          <span class="cost-card-title"><i class="fa-solid fa-rotate"></i> Retry-on-5xx triggers</span>
+          <span class="cost-card-value success-val">${totalRetries} Retries</span>
+          <span class="cost-card-desc">Gateway auto-recovery events</span>
+        </div>
+        <div class="cost-card">
+          <span class="cost-card-title"><i class="fa-solid fa-hourglass-half"></i> Total LLM Latency</span>
+          <span class="cost-card-value">${(totalLatencyMs / 1000).toFixed(1)}s</span>
+          <span class="cost-card-desc">Time spent in LLM generations</span>
+        </div>
+      `;
+      
+      if (rowsHTML.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No LLM cost records logged for this session yet.</td>
+          </tr>
+        `;
+      } else {
+        tableBody.innerHTML = rowsHTML.join("");
+      }
+    }
+
+    // Graph Columns categorization
+    function getSkillColumn(skill) {
+      const s = skill.toLowerCase();
+      if (s === "planner") return 0;
+      if (s === "researcher" || s === "retriever") return 1;
+      if (s === "distiller" || s === "coder" || s === "sentiment_analyzer") return 2;
+      if (s === "critic" || s === "sandbox_executor") return 3;
+      if (s === "formatter") return 4;
+      return 2; // Default column
+    }
+
+    const COLUMNS_LABELS = [
+      "Decomposition",
+      "Perception & Retrieve",
+      "Analysis & Coding",
+      "Evaluation & Execute",
+      "Formatting"
+    ];
+
+    function renderDAG(nodes) {
+      const dagCanvas = document.getElementById("dag-canvas");
+      
+      // Remove all elements except SVG overlay
+      const svg = document.getElementById("svg-connections");
+      dagCanvas.innerHTML = "";
+      dagCanvas.appendChild(svg);
+      svg.innerHTML = "";
+      
+      // Create column arrays
+      const columns = Array.from({length: 5}, () => []);
+      
+      // Distribute nodes to columns
+      nodes.forEach(node => {
+        const colIdx = getSkillColumn(node.skill);
+        columns[colIdx].push(node);
+      });
+      
+      // Render columns
+      columns.forEach((colNodes, idx) => {
+        if (colNodes.length === 0) return;
+        
+        const colDiv = document.createElement("div");
+        colDiv.className = "dag-column";
+        
+        const colTitle = document.createElement("div");
+        colTitle.className = "dag-column-title";
+        colTitle.innerText = COLUMNS_LABELS[idx];
+        colDiv.appendChild(colTitle);
+        
+        // Sort nodes by numeric ID suffix so order remains stable
+        colNodes.sort((a,b) => {
+          const numA = parseInt(a.node_id.split(":")[1]) || 0;
+          const numB = parseInt(b.node_id.split(":")[1]) || 0;
+          return numA - numB;
+        });
+
+        colNodes.forEach(node => {
+          const card = document.createElement("div");
+          card.className = `node-card ${node.status} ${node.node_id === selectedNodeId ? 'active-inspect' : ''}`;
+          card.id = `node-${node.node_id.replace(":", "-")}`;
+          card.onclick = () => {
+            // Disable auto-cycling on node click
+            autoCyclingEnabled = false;
+            const toggle = document.getElementById("autocycle-toggle");
+            if (toggle) toggle.checked = false;
+
+            // Unhighlight other cards
+            document.querySelectorAll(".node-card").forEach(c => c.classList.remove("active-inspect"));
+            card.classList.add("active-inspect");
+            selectedNodeId = node.node_id;
+            inspectNode(node);
+          };
+          
+          let durationStr = "—";
+          if (node.result && node.result.elapsed_s) {
+            durationStr = `${node.result.elapsed_s.toFixed(1)}s`;
+          }
+          
+          let preview = "";
+          if (node.result && node.result.error) {
+            preview = `Error: ${node.result.error}`;
+          } else if (node.result && node.result.output) {
+            if (node.skill === "coder" && node.result.output.code) {
+              preview = node.result.output.code;
+            } else if (node.skill === "sandbox_executor" && node.result.output.stdout) {
+              preview = node.result.output.stdout;
+            } else if (node.result.output.final_answer) {
+              preview = node.result.output.final_answer;
+            } else if (node.result.output.fields) {
+              preview = JSON.stringify(node.result.output.fields);
+            } else {
+              preview = JSON.stringify(node.result.output);
+            }
+          } else if (node.metadata && node.metadata.question) {
+            preview = node.metadata.question;
+          }
+          
+          card.innerHTML = `
+            <div class="node-header">
+              <span class="node-skill">${node.skill.replace("_", " ")}</span>
+              <span class="node-id-badge">${node.node_id}</span>
+            </div>
+            <div class="node-preview" title="${escapeHtml(preview)}">${escapeHtml(preview)}</div>
+            <div class="node-footer">
+              <div class="node-duration"><i class="fa-regular fa-clock"></i> ${durationStr}</div>
+              <div class="node-status-badge status-badge-${node.status}">${node.status}</div>
+            </div>
+          `;
+          
+          colDiv.appendChild(card);
+        });
+        
+        dagCanvas.appendChild(colDiv);
+      });
+
+      // Draw connections after DOM elements are placed
+      setTimeout(() => drawEdges(nodes), 50);
+    }
+
+    function drawEdges(nodes) {
+      const svg = document.getElementById("svg-connections");
+      const canvas = document.getElementById("dag-canvas");
+      const canvasRect = canvas.getBoundingClientRect();
+      svg.innerHTML = "";
+      
+      nodes.forEach(node => {
+        if (!node.inputs) return;
+        
+        node.inputs.forEach(inputNid => {
+          if (!inputNid.startsWith("n:")) return;
+          
+          const sourceEl = document.getElementById(`node-${inputNid.replace(":", "-")}`);
+          const targetEl = document.getElementById(`node-${node.node_id.replace(":", "-")}`);
+          
+          if (!sourceEl || !targetEl) return;
+          
+          const srcRect = sourceEl.getBoundingClientRect();
+          const trgRect = targetEl.getBoundingClientRect();
+          
+          // Coordinate relative to canvas container
+          const x1 = srcRect.right - canvasRect.left;
+          const y1 = (srcRect.top + srcRect.bottom)/2 - canvasRect.top;
+          
+          const x2 = trgRect.left - canvasRect.left;
+          const y2 = (trgRect.top + trgRect.bottom)/2 - canvasRect.top;
+          
+          // Control points for smooth bezier curve
+          const cx1 = x1 + (x2 - x1) * 0.4;
+          const cy1 = y1;
+          const cx2 = x1 + (x2 - x1) * 0.6;
+          const cy2 = y2;
+          
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`);
+          path.setAttribute("fill", "none");
+          
+          // Style based on target status
+          if (node.status === "complete") {
+            path.setAttribute("stroke", "rgba(16, 185, 129, 0.4)");
+            path.setAttribute("stroke-width", "2.5");
+          } else if (node.status === "running") {
+            path.setAttribute("stroke", "rgba(59, 130, 246, 0.6)");
+            path.setAttribute("stroke-width", "2.5");
+            path.setAttribute("stroke-dasharray", "5 5");
+            // animate dashoffset
+            const anim = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+            anim.setAttribute("attributeName", "stroke-dashoffset");
+            anim.setAttribute("values", "10;0");
+            anim.setAttribute("dur", "0.5s");
+            anim.setAttribute("repeatCount", "indefinite");
+            path.appendChild(anim);
+          } else if (node.status === "failed") {
+            path.setAttribute("stroke", "rgba(239, 68, 68, 0.4)");
+            path.setAttribute("stroke-width", "2");
+          } else {
+            path.setAttribute("stroke", "rgba(255, 255, 255, 0.08)");
+            path.setAttribute("stroke-width", "1.5");
+          }
+          
+          svg.appendChild(path);
+        });
+      });
+    }
+
+    function inspectNode(node) {
+      document.getElementById("inspector").style.display = "flex";
+      
+      document.getElementById("inspect-node-id").innerText = node.node_id;
+      document.getElementById("inspect-skill").innerText = node.skill.replace("_", " ");
+      document.getElementById("inspect-status").innerText = node.status.toUpperCase();
+      
+      let durationStr = "—";
+      if (node.result && node.result.elapsed_s) {
+        durationStr = `${node.result.elapsed_s.toFixed(2)}s`;
+      }
+      document.getElementById("inspect-duration").innerText = durationStr;
+      document.getElementById("inspect-inputs").innerText = node.inputs ? node.inputs.join(", ") : "(none)";
+
+      // Metadata section
+      const metaGrid = document.getElementById("inspect-metadata-grid");
+      if (node.metadata && Object.keys(node.metadata).length > 0) {
+        document.getElementById("inspect-section-meta").style.display = "block";
+        metaGrid.innerHTML = Object.entries(node.metadata).map(([k, v]) => `
+          <span class="meta-label">${escapeHtml(k)}</span>
+          <span class="meta-val">${escapeHtml(typeof v === 'object' ? JSON.stringify(v) : String(v))}</span>
+        `).join("");
+      } else {
+        document.getElementById("inspect-section-meta").style.display = "none";
+      }
+
+      // Coder Python Code
+      if (node.skill === "coder" && node.result && node.result.output && node.result.output.code) {
+        document.getElementById("inspect-section-code").style.display = "block";
+        document.getElementById("inspect-code-display").innerText = node.result.output.code;
+      } else {
+        document.getElementById("inspect-section-code").style.display = "none";
+      }
+
+      // SandboxExecutor output
+      if (node.skill === "sandbox_executor" && node.result && node.result.output) {
+        document.getElementById("inspect-section-stdout").style.display = "block";
+        const o = node.result.output;
+        let stdoutText = "";
+        if (o.exit_code !== undefined) stdoutText += `[Exit Code ${o.exit_code}]\n`;
+        if (o.stdout) stdoutText += `STDOUT:\n${o.stdout}\n`;
+        if (o.stderr) stdoutText += `STDERR:\n${o.stderr}\n`;
+        document.getElementById("inspect-stdout-display").innerText = stdoutText || "(no stdout/stderr outputs)";
+      } else {
+        document.getElementById("inspect-section-stdout").style.display = "none";
+      }
+
+      // Node Result Output
+      if (node.result && node.result.output) {
+        document.getElementById("inspect-section-output").style.display = "block";
+        document.getElementById("inspect-output-display").innerText = JSON.stringify(node.result.output, null, 2);
+      } else {
+        document.getElementById("inspect-section-output").style.display = "none";
+      }
+
+      // Prompt
+      if (node.prompt_sent) {
+        document.getElementById("inspect-section-prompt").style.display = "block";
+        document.getElementById("inspect-prompt-display").innerText = node.prompt_sent;
+      } else {
+        document.getElementById("inspect-section-prompt").style.display = "none";
+      }
+    }
+
+    function closeInspector() {
+      document.getElementById("inspector").style.display = "none";
+      document.querySelectorAll(".node-card").forEach(c => c.classList.remove("active-inspect"));
+      selectedNodeId = null;
+    }
+
+    // Modal forms
+    function openNewQueryModal() {
+      document.getElementById("modal-overlay").classList.add("open");
+    }
+
+    function closeNewQueryModal() {
+      document.getElementById("modal-overlay").classList.remove("open");
+    }
+
+    async function submitQuery() {
+      const q = document.getElementById("modal-query-input").value.trim();
+      if (!q) return;
+      
+      closeNewQueryModal();
+      
+      try {
+        const res = await fetch("/api/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: q })
+        });
+        const data = await res.json();
+        
+        // Clear query input
+        document.getElementById("modal-query-input").value = "";
+        
+        // Select session and poll
+        await fetchSessions();
+        selectSession(data.session_id);
+      } catch (err) {
+        alert("Failed to submit query: " + err);
+      }
+    }
+
+    function showConfirm(title, message) {
+      document.getElementById("confirm-modal-title").innerText = title;
+      document.getElementById("confirm-modal-body").innerText = message;
+      document.getElementById("confirm-modal-overlay").classList.add("open");
+      
+      return new Promise((resolve) => {
+        const handleCancel = () => {
+          document.getElementById("confirm-modal-overlay").classList.remove("open");
+          cleanup();
+          resolve(false);
+        };
+        const handleOk = () => {
+          document.getElementById("confirm-modal-overlay").classList.remove("open");
+          cleanup();
+          resolve(true);
+        };
+        const cleanup = () => {
+          document.getElementById("confirm-modal-cancel").removeEventListener("click", handleCancel);
+          document.getElementById("confirm-modal-ok").removeEventListener("click", handleOk);
+        };
+        document.getElementById("confirm-modal-cancel").addEventListener("click", handleCancel);
+        document.getElementById("confirm-modal-ok").addEventListener("click", handleOk);
+      });
+    }
+
+    async function clearSessions() {
+      const confirmed = await showConfirm("Clear History", "Are you sure you want to clear all execution sessions from history?");
+      if (!confirmed) return;
+      try {
+        const res = await fetch("/api/sessions/clear", { method: "POST" });
+        if (res.ok) {
+          currentSessionId = null;
+          selectedNodeId = null;
+          closeInspector();
+          document.getElementById("query-banner").style.display = "none";
+          document.getElementById("no-session-splash").style.display = "block";
+          document.getElementById("dag-canvas").innerHTML = '<svg class="svg-connections" id="svg-connections"></svg>';
+          await fetchSessions();
+        }
+      } catch (err) {
+        alert("Failed to clear sessions: " + err);
+      }
+    }
+
+    async function deleteSession(event, sid) {
+      if (event) event.stopPropagation();
+      const confirmed = await showConfirm("Delete Session", `Are you sure you want to delete session ${sid}?`);
+      if (!confirmed) return;
+      try {
+        const res = await fetch(`/api/sessions/delete/${sid}`, { method: "POST" });
+        if (res.ok) {
+          if (currentSessionId === sid) {
+            currentSessionId = null;
+            selectedNodeId = null;
+            closeInspector();
+            document.getElementById("query-banner").style.display = "none";
+            document.getElementById("no-session-splash").style.display = "block";
+            document.getElementById("dag-canvas").innerHTML = '<svg class="svg-connections" id="svg-connections"></svg>';
+          }
+          await fetchSessions();
+        }
+      } catch (err) {
+        alert("Failed to delete session: " + err);
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Helper to format/stringify JSON safely
+    JSON.dumps = function(obj, replacer, space) {
+      return JSON.stringify(obj, replacer, space);
+    }
+  </script>
+</body>
+</html>
